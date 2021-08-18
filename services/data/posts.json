@@ -1,0 +1,29 @@
+[
+  {
+    "title": "This is cow's post",
+    "category": "Amazing animals",
+    "id": "4j9hco2ogksi017ls",
+    "createdAt": "2021-08-18T21:20:35.007Z",
+    "imageURL": "http://localhost:3001/public/img/blog-images/4j9hco2ogksi017ls.png"
+  },
+  {
+    "title": "This is pig's blog post",
+    "category": "Amazing animals",
+    "id": "4j9hco9goksi02r90",
+    "createdAt": "2021-08-18T21:21:47.124Z",
+    "imageURL": "http://localhost:3001/public/img/blog-images/4j9hco9goksi02r90.png"
+  },
+  {
+    "title": "Panda post",
+    "category": "Amazing animals",
+    "id": "4j9hcoc2wksi03ipi",
+    "createdAt": "2021-08-18T21:22:22.709Z",
+    "imageURL": "http://localhost:3001/public/img/blog-images/4j9hcoc2wksi03ipi.png"
+  },
+  {
+    "title": "Dancing unicorn",
+    "category": "Amazing animals",
+    "id": "4j9hcogt8ksi05xc4",
+    "createdAt": "2021-08-18T21:24:14.979Z"
+  }
+]
