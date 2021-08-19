@@ -1,12 +1,28 @@
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
-
+import { saveCoverCloudinary } from "../fs-tools/fs-tools.js";
 import multer from "multer";
 
 import { Router } from "express";
 import fse from "fs-extra";
 import uniqid from "uniqid";
 import { PORT, PUBLIC_URL } from "../config.js";
+// import { postValidation } from "../../validation.js"; //Validation for post
+import { validationResult } from "express-validator";
+import createHttpError from "http-errors";
+
+// const storage = new CloudinaryStorage({
+//   cloudinary: cloudinary,
+// });
+// const { CLOUDINARY_NAME, CLOUDINARY_KEY, CLOUDINARY_SECRET } = process.env;
+
+// cloudinary.config({
+//   cloud_name: CLOUDINARY_NAME,
+//   api_key: CLOUDINARY_KEY,
+//   api_secret: CLOUDINARY_SECRET,
+// });
+
+// const parseFile = multer({ storage });
 
 const blogPostsRouter = Router();
 
@@ -102,7 +118,7 @@ export const saveBlogPic = (filename, contentBuffer) =>
 
 blogPostsRouter.post(
   "/:id/uploadCover",
-  multer().single("blogPic"),
+  multer({ storage: saveCoverCloudinary }).single("blogPic"),
   async (req, res, next) => {
     const { mimetype } = req.file;
     const extension = mimetype.slice(mimetype.lastIndexOf("/") + 1);
@@ -110,25 +126,28 @@ blogPostsRouter.post(
     try {
       const blogs = await fse.readJSON(blogsPath);
       const oldBlog = blogs.find((blog) => blog.id === req.params.id);
+      if (!errorList.isEmpty()) {
+        next(createHttpError(400, { errorList }));
+      } else {
+        if (oldBlog === undefined) {
+          res.status(404).send();
+          return;
+        }
 
-      if (oldBlog === undefined) {
-        res.status(404).send();
-        return;
+        const newFileName = req.params.id + "." + extension;
+        await saveBlogPic(newFileName, req.file.buffer);
+
+        const newBlog = Object.assign(oldBlog, {
+          imageURL: `http://localhost:${PORT}${blogPicsPublicURL}/${newFileName}`,
+        });
+        const newBlogs = blogs.filter((blog) => blog.id !== req.params.id);
+
+        newBlogs.push(newBlog);
+        await fse.writeJSON(blogsPath, newBlogs);
+        res.status(204).send();
       }
-
-      const newFileName = req.params.id + "." + extension;
-      await saveBlogPic(newFileName, req.file.buffer);
-
-      const newBlog = Object.assign(oldBlog, {
-        imageURL: `http://localhost:${PORT}${blogPicsPublicURL}/${newFileName}`,
-      });
-      const newBlogs = blogs.filter((blog) => blog.id !== req.params.id);
-
-      newBlogs.push(newBlog);
-      await fse.writeJSON(blogsPath, newBlogs);
-      res.status(204).send();
     } catch (error) {
-      next(error);
+      console.log(error);
     }
   }
 );

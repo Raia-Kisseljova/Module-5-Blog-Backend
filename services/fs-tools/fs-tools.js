@@ -1,4 +1,12 @@
 import fs from "fs-extra";
-import { fileURLToPath } from "url";
-import { dirname, join } from "path";
-const { readJSON, writeJSON, writeFile } = fs;
+
+import { v2 as cloudinary } from "cloudinary";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
+
+export const saveCoverCloudinary = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    format: "png",
+    folder: "striveBlog/covers",
+  },
+});
