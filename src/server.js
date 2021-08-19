@@ -4,7 +4,7 @@ import { join } from "path";
 import process from "process";
 import blogPostsRouter from "../services/blogPosts/blogPosts.js";
 const server = express();
-const port = 3001;
+const { PORT } = process.env;
 
 const publicFolderPath = join(process.cwd(), "public");
 
