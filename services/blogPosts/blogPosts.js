@@ -7,7 +7,7 @@ import { Router } from "express";
 import fse from "fs-extra";
 import uniqid from "uniqid";
 import { PORT, PUBLIC_URL } from "../config.js";
-// import { postValidation } from "../../validation.js"; //Validation for post
+import { postValidation } from "../../validation.js"; //Validation for post
 import { validationResult } from "express-validator";
 import createHttpError from "http-errors";
 
@@ -120,34 +120,25 @@ blogPostsRouter.post(
   "/:id/uploadCover",
   multer({ storage: saveCoverCloudinary }).single("blogPic"),
   async (req, res, next) => {
-    const { mimetype } = req.file;
-    const extension = mimetype.slice(mimetype.lastIndexOf("/") + 1);
-
     try {
-      const blogs = await fse.readJSON(blogsPath);
-      const oldBlog = blogs.find((blog) => blog.id === req.params.id);
-      if (!errorList.isEmpty()) {
-        next(createHttpError(400, { errorList }));
-      } else {
-        if (oldBlog === undefined) {
-          res.status(404).send();
-          return;
-        }
+      const paramsId = req.params.id;
+      const blogPosts = await fse.readJSON(blogsPath);
+      const blogPost = blogPosts.find((p) => p.id === paramsId);
+      if (blogPost) {
+        const imageUrl = req.file.path;
+        console.log("url", imageUrl);
+        const updatedBlogPost = { ...blogPost, imageURL: imageUrl };
+        console.log(updatedBlogPost);
 
-        const newFileName = req.params.id + "." + extension;
-        await saveBlogPic(newFileName, req.file.buffer);
+        const remainingBlogPosts = blogPosts.filter((p) => p.id !== paramsId);
 
-        const newBlog = Object.assign(oldBlog, {
-          imageURL: `http://localhost:${PORT}${blogPicsPublicURL}/${newFileName}`,
-        });
-        const newBlogs = blogs.filter((blog) => blog.id !== req.params.id);
-
-        newBlogs.push(newBlog);
-        await fse.writeJSON(blogsPath, newBlogs);
-        res.status(204).send();
+        remainingBlogPosts.push(updatedBlogPost);
+        console.log("second", remainingBlogPosts);
+        await fse.writeJSON(blogsPath, remainingBlogPosts);
+        res.send(updatedBlogPost);
       }
     } catch (error) {
-      console.log(error);
+      next(error);
     }
   }
 );
